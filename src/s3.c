@@ -64,6 +64,7 @@ static S3Protocol protocolG = S3ProtocolHTTPS;
 static S3UriStyle uriStyleG = S3UriStylePath;
 static int retriesG = 5;
 static int verifyPeerG = 0;
+static int failOnErrorG = 0;
 
 
 // Environment variables, saved as globals ----------------------------------
@@ -201,6 +202,7 @@ static void usageExit(FILE *out)
 "   -r/--retries         : retry retryable failures this number of times\n"
 "                          (default is 5)\n"
 "   -v/--verify-peer     : verify peer SSL certificate (default is no)\n"
+"   -e/--fail-on-error   : always return with non-zero error code on error (default is off)\n"
 "\n"
 "   Environment:\n"
 "\n"
@@ -3562,12 +3564,24 @@ void set_logging(int argc, char **argv, int optindex)
 
 // main ----------------------------------------------------------------------
 
+/**
+ * When fail-on-error is disabled, return
+ *     -1       if command is not acceptable,
+ *      0       otherwise
+ *
+ * With fail-on-error enabled, return
+ *     -1      for command is not acceptable,
+ *      1..127 on S3 error codes,
+ *      0      on successful execution
+ */
 int main(int argc, char **argv)
 {
+    int errorCode = 0;
+
     // Parse args
     while (1) {
         int idx = 0;
-        int c = getopt_long(argc, argv, "vfhusr:", longOptionsG, &idx);
+        int c = getopt_long(argc, argv, "evfhusr:", longOptionsG, &idx);
 
         if (c == -1) {
             // End of options
@@ -3600,6 +3614,9 @@ int main(int argc, char **argv)
             verifyPeerG = S3_INIT_VERIFY_PEER;
             break;
         }
+        case 'e':
+            failOnErrorG = 1;
+            break;
         default:
             fprintf(stderr, "\nERROR: Unknown option: -%c\n", c);
             // Usage exit
@@ -3704,5 +3721,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    return 0;
+    if (failOnErrorG) {
+        errorCode = statusG;
+    }
+
+    return errorCode;
 }

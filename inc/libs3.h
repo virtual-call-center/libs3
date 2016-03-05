@@ -239,7 +239,10 @@ extern "C" {
  **/
 typedef enum
 {
-    S3StatusOK                                              ,
+    /**
+     * OK is error code 0
+     */
+    S3StatusOK                                         =   0,
 
     /**
      * Errors that prevent the S3 request from being issued or response from
