@@ -1,3 +1,9 @@
+This repository forked from bji/libs3 on 5h March 2016.
+
+Add a new feature: s3 binary exiting with proper exit code if problem happens.
+
+--------------------------------------
+
 This directory contains the libs3 library.
 
 The libs3 library is free software.  See the file LICENSE for copying
